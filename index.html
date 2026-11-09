@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pair University - Class Timetable (November 2026)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        pairGold: '#F5B041',
+                        pairDark: '#121212',
+                        pairCard: '#1E1E1E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for clean aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+        .pulse-live {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 min-h-screen font-sans antialiased pb-16">
+
+    <!-- Toast Notification for Clipboard -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-yellow-500 text-black font-bold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 pointer-events-none">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span>Discord handle copied to clipboard!</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+
+        <!-- Top Header Banner -->
+        <header class="bg-gradient-to-r from-amber-500 via-pairGold to-yellow-500 text-black rounded-2xl p-5 sm:p-7 shadow-2xl border border-yellow-400/30">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <!-- Pair University Crest / Logo -->
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 bg-black text-yellow-400 rounded-full flex items-center justify-center font-black text-2xl border-4 border-yellow-300 shadow-inner shrink-0">
+                        🎓
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-2xl sm:text-4xl font-black tracking-wider uppercase leading-none">PAIR UNIVERSITY</h1>
+                            <span class="bg-black text-yellow-400 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md border border-yellow-500/50 shadow-sm">
+                                powered by negative.wtf
+                            </span>
+                        </div>
+                        <p class="text-xs sm:text-sm font-bold tracking-widest text-neutral-900 uppercase mt-1 opacity-90">
+                            CLASS TIMETABLE • NOVEMBER 2026
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Global Info & Timezone Selector -->
+                <div class="flex flex-wrap items-center gap-2 bg-black/20 p-2.5 rounded-xl backdrop-blur-md border border-black/10">
+                    <div class="text-xs font-semibold text-neutral-900 flex items-center gap-1.5 px-2">
+                        <span>🌍 Timezone:</span>
+                    </div>
+                    <select id="timezone-select" onchange="handleTimezoneChange(this.value)" class="bg-black text-yellow-400 font-bold text-xs rounded-lg px-3 py-2 border border-yellow-500/40 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer">
+                        <option value="auto">🌐 Browser Local (Auto)</option>
+                        <option value="UTC">GMT • UK / EUROPE (UTC+0)</option>
+                        <option value="America/New_York">EST • New York (UTC-5)</option>
+                        <option value="America/Los_Angeles">PST • Los Angeles (UTC-8)</option>
+                        <option value="Europe/Paris">CET • Paris / Berlin (UTC+1)</option>
+                        <option value="Asia/Tokyo">JST • Tokyo (UTC+9)</option>
+                        <option value="Australia/Sydney">AEDT • Sydney (UTC+11)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-black/10 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-neutral-900">
+                <div>📅 SCHEDULE: 10–20 NOV 2026</div>
+                <div>📝 EXAMS: 21–22 NOV 2026</div>
+                <div id="active-tz-display" class="bg-black/10 px-2 py-0.5 rounded text-[11px] font-extrabold">Active TZ: Detecting...</div>
+            </div>
+        </header>
+
+        <!-- Dynamic Hero Banner: Next Class Countdown -->
+        <section id="next-hero" class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-xl relative overflow-hidden transition-all duration-300">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span id="hero-status-badge" class="px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-yellow-500 text-black">
+                            NEXT UPCOMING CLASS
+                        </span>
+                        <span id="hero-day-tag" class="text-xs text-neutral-400 font-medium"></span>
+                    </div>
+                    <h2 id="hero-title" class="text-xl sm:text-2xl font-black text-white">Loading schedule data...</h2>
+                    <p id="hero-details" class="text-xs sm:text-sm text-neutral-400">Please wait while countdown timers synchronize.</p>
+                </div>
+
+                <!-- Clock / Countdown -->
+                <div class="bg-neutral-950 border border-neutral-800 rounded-xl px-5 py-3 flex items-center gap-4 shrink-0 justify-between sm:justify-start">
+                    <div class="text-center">
+                        <div class="text-[10px] uppercase font-bold text-neutral-500">Starts In</div>
+                        <div id="hero-timer" class="font-mono text-2xl sm:text-3xl font-black text-yellow-400 tracking-tight">--:--:--</div>
+                    </div>
+                    <div class="h-8 w-px bg-neutral-800"></div>
+                    <div class="text-right">
+                        <div class="text-[10px] uppercase font-bold text-neutral-500">Local Time</div>
+                        <div id="hero-start-time" class="font-mono text-sm sm:text-base font-bold text-neutral-200">--:--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters & Search Controls -->
+        <section class="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-lg space-y-3">
+            <div class="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
+                <!-- Search input -->
+                <div class="relative flex-1">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search subject or teacher (e.g. English, Alex + Pedro, Eeka)..." class="w-full pl-9 pr-4 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-500/50 transition-colors">
+                </div>
+
+                <!-- Quick Filter Pills -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none" id="teacher-filters">
+                    <button onclick="filterTeacher('ALL')" class="teacher-btn active bg-yellow-500 text-black px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALL</button>
+                    <button onclick="filterTeacher('EEKA')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-orange-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">EEKA</button>
+                    <button onclick="filterTeacher('ELLY')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-pink-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ELLY</button>
+                    <button onclick="filterTeacher('ZACH')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-yellow-300 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ZACH</button>
+                    <button onclick="filterTeacher('BEDSY')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-emerald-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">BEDSY</button>
+                    <button onclick="filterTeacher('SCOTTIE')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-purple-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">SCOTTIE</button>
+                    <button onclick="filterTeacher('ALEX')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-cyan-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALEX</button>
+                    <button onclick="filterTeacher('ALEX + PEDRO')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-cyan-300 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALEX + PEDRO</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timetable Grid Container -->
+        <main id="timetable-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Dynamically populated day cards -->
+        </main>
+
+        <!-- Teachers & Subject Legend Card -->
+        <section class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h3 class="text-xs font-extrabold uppercase tracking-widest text-neutral-400 border-b border-neutral-800 pb-2">TEACHERS &amp; SUBJECTS DIRECTORY</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#e67e22] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">EEKA</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">English • E-dating 1001</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#ec7063] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ELLY</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Mathematics • Femboy Aesthetics</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#52be80] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">BEDSY</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Gym / Sports • Com Kid Studies</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#af7ac5] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">SCOTTIE</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">History • Partying</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#d4ac0d] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ZACH</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">HAD • HTLBGATG</p>
+                    </div>
+                </div>
+                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                    <div>
+                        <span class="bg-[#5dade2] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ALEX &amp; ALEX + PEDRO</span>
+                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Ragebait (Alex) • Coding (Alex + Pedro)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-2 text-[11px] text-neutral-500 border-t border-neutral-800/50 flex flex-col sm:flex-row gap-2 justify-between">
+                <span>* Only Eeka's Nov 15 catch-up sessions are optional; all other classes are compulsory.</span>
+                <span>HAD: Home Architecture Design | HTLBGATG: How to LARP Being Good at the Game</span>
+            </div>
+        </section>
+
+        <!-- Footer with Negative.wtf & Discord Credits -->
+        <footer class="mt-12 text-center text-xs text-neutral-400 space-y-3 pb-8">
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <span class="text-neutral-500">Powered by</span>
+                <span class="font-extrabold text-yellow-400 bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-800 flex items-center gap-1.5 shadow-sm">
+                    <span>⚡</span> negative.wtf
+                </span>
+                <span class="text-neutral-600">•</span>
+                <button onclick="copyDiscordHandle()" class="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 px-3 py-1.5 rounded-lg border border-neutral-800 transition-all flex items-center gap-2 font-mono text-[11px] group cursor-pointer shadow-sm active:scale-95" title="Click to copy Discord handle">
+                    <span class="text-purple-400">💬</span> Discord: <span class="text-yellow-400 font-bold group-hover:underline">nxgativx</span>
+                    <span id="copy-badge" class="text-[9px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded ml-1 group-hover:bg-neutral-700">Copy</span>
+                </button>
+            </div>
+            <p class="text-neutral-600 text-[11px]">© 2026 Pair University Timetable • All dates and times adapt dynamically to your local timezone</p>
+        </footer>
+
+    </div>
+
+    <!-- JavaScript Engine -->
+    <script>
+        // Master Timetable Dataset (Base UTC timestamps representing November 2026 schedule)
+        const RAW_SCHEDULE = [
+            // Mon 09 Nov
+            { baseDayStr: "MON 09 NOV", baseTimeStr: "23:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-09T23:00:00Z").getTime() },
+
+            // Tue 10 Nov
+            { baseDayStr: "TUE 10 NOV", baseTimeStr: "00:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-10T00:00:00Z").getTime() },
+            { baseDayStr: "TUE 10 NOV", baseTimeStr: "01:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-10T01:00:00Z").getTime() },
+            { baseDayStr: "TUE 10 NOV", baseTimeStr: "02:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-10T02:00:00Z").getTime() },
+
+            // Wed 11 Nov
+            { baseDayStr: "WED 11 NOV", baseTimeStr: "08:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-11T08:00:00Z").getTime() },
+            { baseDayStr: "WED 11 NOV", baseTimeStr: "09:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-11T09:00:00Z").getTime() },
+            { baseDayStr: "WED 11 NOV", baseTimeStr: "18:00", teacher: "SCOTTIE", subject: "History", optional: false, timestamp: new Date("2026-11-11T18:00:00Z").getTime() },
+            { baseDayStr: "WED 11 NOV", baseTimeStr: "19:00", teacher: "BEDSY", subject: "Gym / Sports", optional: false, timestamp: new Date("2026-11-11T19:00:00Z").getTime() },
+            { baseDayStr: "WED 11 NOV", baseTimeStr: "23:00", teacher: "ALEX + PEDRO", subject: "Creative Programming", optional: false, timestamp: new Date("2026-11-11T23:00:00Z").getTime() },
+
+            // Thu 12 Nov
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "00:00", teacher: "ALEX + PEDRO", subject: "Creative Programming", optional: false, timestamp: new Date("2026-11-12T00:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "01:00", teacher: "ALEX", subject: "How to Ragebait", optional: false, timestamp: new Date("2026-11-12T01:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "02:00", teacher: "BEDSY", subject: "Com Kid Studies", optional: false, timestamp: new Date("2026-11-12T02:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "03:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-12T03:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "04:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-12T04:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "10:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-12T10:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "11:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-12T11:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "22:00", teacher: "ZACH", subject: "HAD", optional: false, timestamp: new Date("2026-11-12T22:00:00Z").getTime() },
+            { baseDayStr: "THU 12 NOV", baseTimeStr: "23:30", teacher: "ZACH", subject: "HTLBGATG", optional: false, timestamp: new Date("2026-11-12T23:30:00Z").getTime() },
+
+            // Fri 13 Nov
+            { baseDayStr: "FRI 13 NOV", baseTimeStr: "01:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-13T01:00:00Z").getTime() },
+            { baseDayStr: "FRI 13 NOV", baseTimeStr: "02:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-13T02:00:00Z").getTime() },
+            { baseDayStr: "FRI 13 NOV", baseTimeStr: "06:00", teacher: "ZACH", subject: "HAD", optional: false, timestamp: new Date("2026-11-13T06:00:00Z").getTime() },
+            { baseDayStr: "FRI 13 N
