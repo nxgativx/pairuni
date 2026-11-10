@@ -171,6 +171,18 @@
       margin-bottom: 0.75rem;
     }
 
+    .hero-label.active-live {
+      background: #ef4444;
+      color: #fff;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
     .hero-title {
       font-size: 1.4rem;
       font-weight: 800;
@@ -206,6 +218,10 @@
       font-weight: 900;
       font-family: monospace;
       color: var(--primary-gold);
+    }
+
+    .timer-val.active-live-val {
+      color: #ef4444;
     }
 
     .timer-lbl {
@@ -317,6 +333,11 @@
       position: relative;
     }
 
+    .class-item.ongoing {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 3px solid #ef4444;
+    }
+
     .class-item:last-child {
       border-bottom: none;
     }
@@ -357,6 +378,15 @@
       font-size: 0.65rem;
       font-weight: 800;
       color: var(--primary-gold);
+    }
+
+    .live-badge.ongoing-text {
+      color: #ef4444;
+      animation: pulse 1.5s infinite;
+    }
+
+    .live-badge.ended-text {
+      color: #4b5563;
     }
 
     /* Footer */
@@ -429,16 +459,16 @@
       </div>
     </div>
 
-    <!-- Hero "Next Up" Banner -->
+    <!-- Hero "Next Up / Live" Banner -->
     <div class="hero-card">
-      <div class="hero-label">NEXT UPCOMING CLASS</div>
+      <div class="hero-label" id="heroBadge">NEXT UPCOMING CLASS</div>
       <div class="hero-title" id="heroClassName">Loading schedule data...</div>
       <div class="hero-meta" id="heroClassMeta">Please wait while countdown timers synchronize.</div>
       
       <div class="hero-timer-box">
         <div class="timer-col">
           <div class="timer-val" id="heroCountdown">--:--:--</div>
-          <div class="timer-lbl">STARTS IN</div>
+          <div class="timer-lbl" id="heroTimerLbl">STARTS IN</div>
         </div>
         <div class="timer-col">
           <div class="timer-val" id="heroLocalTime">--:--</div>
@@ -576,6 +606,7 @@
 
     let currentTz = "AUTO";
     let activeFilter = "ALL";
+    const CLASS_DURATION_MS = 60 * 60 * 1000; // 1 hour duration per class
 
     function parseUtcDate(dayStr, timeStr) {
       const match = dayStr.match(/(\d{2})\s+NOV/);
@@ -604,57 +635,95 @@
       return "badge-alex";
     }
 
+    function formatTimeDiff(ms) {
+      const totalSec = Math.floor(Math.abs(ms) / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+
+      if (days > 0) {
+        return `${days}d ${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+      }
+      return `${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+    }
+
     function updateHero() {
       const now = new Date();
       const tz = getResolvedTz();
+      
+      let liveClass = null;
       let nextClass = null;
-      let minDiff = Infinity;
+      let minUpcomingDiff = Infinity;
 
       rawSchedule.forEach(group => {
         group.items.forEach(item => {
-          const classUtc = parseUtcDate(group.day, item.time);
-          const diff = classUtc - now;
-          if (diff > 0 && diff < minDiff) {
-            minDiff = diff;
-            nextClass = { ...item, utcDate: classUtc };
+          const startUtc = parseUtcDate(group.day, item.time);
+          const endUtc = new Date(startUtc.getTime() + CLASS_DURATION_MS);
+
+          if (now >= startUtc && now < endUtc) {
+            liveClass = { ...item, startUtc, endUtc };
+          } else if (startUtc > now) {
+            const diff = startUtc - now;
+            if (diff < minUpcomingDiff) {
+              minUpcomingDiff = diff;
+              nextClass = { ...item, startUtc, endUtc };
+            }
           }
         });
       });
 
-      if (!nextClass) {
+      const heroBadge = document.getElementById("heroBadge");
+      const heroCountdown = document.getElementById("heroCountdown");
+      const heroTimerLbl = document.getElementById("heroTimerLbl");
+
+      if (liveClass) {
+        heroBadge.textContent = "CLASS IN PROGRESS NOW";
+        heroBadge.classList.add("active-live");
+        heroCountdown.classList.add("active-live-val");
+        
+        document.getElementById("heroClassName").textContent = `${liveClass.title} (${liveClass.teacher})`;
+        
+        const localTimeStr = liveClass.startUtc.toLocaleTimeString("en-US", {
+          timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
+        });
+        document.getElementById("heroClassMeta").textContent = `Started at ${localTimeStr} (${tz}) • Ends in 1h`;
+        document.getElementById("heroLocalTime").textContent = localTimeStr;
+
+        const remainingMs = liveClass.endUtc - now;
+        heroCountdown.textContent = formatTimeDiff(remainingMs);
+        heroTimerLbl.textContent = "ENDS IN";
+
+      } else if (nextClass) {
+        heroBadge.textContent = "NEXT UPCOMING CLASS";
+        heroBadge.classList.remove("active-live");
+        heroCountdown.classList.remove("active-live-val");
+
+        document.getElementById("heroClassName").textContent = `${nextClass.title} (${nextClass.teacher})`;
+        
+        const localTimeStr = nextClass.startUtc.toLocaleTimeString("en-US", {
+          timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
+        });
+        const localDateStr = nextClass.startUtc.toLocaleDateString("en-US", {
+          timeZone: tz, weekday: 'short', month: 'short', day: '2-digit'
+        });
+
+        document.getElementById("heroClassMeta").textContent = `${localDateStr} at ${localTimeStr} (${tz})`;
+        document.getElementById("heroLocalTime").textContent = localTimeStr;
+
+        const diffMs = nextClass.startUtc - now;
+        heroCountdown.textContent = formatTimeDiff(diffMs);
+        heroTimerLbl.textContent = "STARTS IN";
+
+      } else {
+        heroBadge.textContent = "TIMETABLE CONCLUDED";
+        heroBadge.classList.remove("active-live");
+        heroCountdown.classList.remove("active-live-val");
         document.getElementById("heroClassName").textContent = "All Classes Completed";
-        document.getElementById("heroClassMeta").textContent = "November 2026 Timetable Concluded";
-        document.getElementById("heroCountdown").textContent = "00:00:00";
+        document.getElementById("heroClassMeta").textContent = "November 2026 Schedule Concluded";
+        heroCountdown.textContent = "00:00:00";
         document.getElementById("heroLocalTime").textContent = "--:--";
-        return;
       }
-
-      // Display both the class title and the teacher name
-      document.getElementById("heroClassName").textContent = `${nextClass.title} (${nextClass.teacher})`;
-      
-      const localTimeStr = nextClass.utcDate.toLocaleTimeString("en-US", {
-        timeZone: tz,
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-
-      const localDateStr = nextClass.utcDate.toLocaleDateString("en-US", {
-        timeZone: tz,
-        weekday: 'short',
-        month: 'short',
-        day: '2-digit'
-      });
-
-      document.getElementById("heroClassMeta").textContent = `${localDateStr} at ${localTimeStr} (${tz})`;
-      document.getElementById("heroLocalTime").textContent = localTimeStr;
-
-      const totalSec = Math.floor(minDiff / 1000);
-      const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-      const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-      const secs = String(totalSec % 60).padStart(2, '0');
-
-      document.getElementById("heroCountdown").textContent = `${hours}:${mins}:${secs}`;
     }
 
     function renderTimetable() {
@@ -687,28 +756,35 @@
 
         let itemsHtml = "";
         filteredItems.forEach(item => {
-          const classUtc = parseUtcDate(group.day, item.time);
-          const timeStr = classUtc.toLocaleTimeString("en-US", {
-            timeZone: tz,
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
+          const startUtc = parseUtcDate(group.day, item.time);
+          const endUtc = new Date(startUtc.getTime() + CLASS_DURATION_MS);
+
+          const startStr = startUtc.toLocaleTimeString("en-US", {
+            timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
+          });
+          const endStr = endUtc.toLocaleTimeString("en-US", {
+            timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
           });
 
-          const diffSec = Math.floor((classUtc - now) / 1000);
-          let liveText = "";
-          if (diffSec > 0 && diffSec <= 86400) {
-            const h = Math.floor(diffSec / 3600);
-            const m = Math.floor((diffSec % 3600) / 60);
-            const s = diffSec % 60;
-            liveText = `<span class="live-badge">in ${h}h ${m}m ${s}s</span>`;
+          let badgeHtml = "";
+          let ongoingClass = "";
+
+          if (now >= startUtc && now < endUtc) {
+            ongoingClass = "ongoing";
+            const endDiffMs = endUtc - now;
+            badgeHtml = `<span class="live-badge ongoing-text">🔴 LIVE • Ends in ${formatTimeDiff(endDiffMs)}</span>`;
+          } else if (startUtc > now) {
+            const startDiffMs = startUtc - now;
+            badgeHtml = `<span class="live-badge">Starts in ${formatTimeDiff(startDiffMs)}</span>`;
+          } else {
+            badgeHtml = `<span class="live-badge ended-text">Completed</span>`;
           }
 
           itemsHtml += `
-            <div class="class-item">
+            <div class="class-item ${ongoingClass}">
               <div class="class-time-row">
-                <span>${timeStr}</span>
-                ${liveText}
+                <span>${startStr} - ${endStr}</span>
+                ${badgeHtml}
               </div>
               <div class="class-subject">${item.title}</div>
               <span class="class-teacher ${getTeacherBadgeClass(item.teacher)}">${item.teacher}</span>
