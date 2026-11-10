@@ -140,14 +140,28 @@
       font-weight: 700;
     }
 
-    /* Hero Banner */
+    /* Top Active & Upcoming Widgets Container */
+    .top-widgets-container {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      scroll-snap-type: x mandatory;
+    }
+
     .hero-card {
+      flex: 1 0 280px;
+      max-width: 100%;
+      scroll-snap-align: start;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 1.25rem 1.5rem;
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .hero-card::before {
@@ -156,6 +170,10 @@
       top: 0; left: 0; right: 0;
       height: 4px;
       background: linear-gradient(90deg, var(--primary-gold), var(--accent-eeka));
+    }
+
+    .hero-card.ongoing::before {
+      background: linear-gradient(90deg, #ef4444, #f59e0b);
     }
 
     .hero-label {
@@ -169,6 +187,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 0.75rem;
+      width: fit-content;
     }
 
     .hero-label.active-live {
@@ -184,14 +203,14 @@
     }
 
     .hero-title {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 800;
       color: #fff;
       margin-bottom: 0.25rem;
     }
 
     .hero-meta {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       margin-bottom: 1rem;
     }
@@ -200,10 +219,10 @@
       background: #101014;
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 0.85rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 0.5rem;
       text-align: center;
     }
 
@@ -214,7 +233,7 @@
     }
 
     .timer-val {
-      font-size: 1.6rem;
+      font-size: 1.35rem;
       font-weight: 900;
       font-family: monospace;
       color: var(--primary-gold);
@@ -225,7 +244,7 @@
     }
 
     .timer-lbl {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
@@ -476,23 +495,8 @@
       </div>
     </div>
 
-    <!-- Hero "Next Up / Live" Banner -->
-    <div class="hero-card">
-      <div class="hero-label" id="heroBadge">NEXT UPCOMING CLASS</div>
-      <div class="hero-title" id="heroClassName">Loading schedule data...</div>
-      <div class="hero-meta" id="heroClassMeta">Please wait while countdown timers synchronize.</div>
-      
-      <div class="hero-timer-box">
-        <div class="timer-col">
-          <div class="timer-val" id="heroCountdown">--:--:--</div>
-          <div class="timer-lbl" id="heroTimerLbl">STARTS IN</div>
-        </div>
-        <div class="timer-col">
-          <div class="timer-val" id="heroLocalTime">--:--</div>
-          <div class="timer-lbl">LOCAL TIME</div>
-        </div>
-      </div>
-    </div>
+    <!-- Dynamic Container for Active & Upcoming Widgets Side-by-Side -->
+    <div class="top-widgets-container" id="topWidgetsContainer"></div>
 
     <!-- Filter Controls -->
     <div class="filter-bar">
@@ -668,13 +672,13 @@
       return `${String(hours).padStart(2, '0')}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
     }
 
-    function updateHero() {
+    function updateHeroWidgets() {
       const now = new Date();
       const tz = getResolvedTz();
+      const container = document.getElementById("topWidgetsContainer");
       
-      let liveClass = null;
-      let nextClass = null;
-      let minUpcomingDiff = Infinity;
+      const liveClasses = [];
+      const upcomingClasses = [];
 
       rawSchedule.forEach(group => {
         group.items.forEach(item => {
@@ -682,68 +686,85 @@
           const endUtc = new Date(startUtc.getTime() + CLASS_DURATION_MS);
 
           if (now >= startUtc && now < endUtc) {
-            liveClass = { ...item, startUtc, endUtc };
+            liveClasses.push({ ...item, startUtc, endUtc });
           } else if (startUtc > now) {
-            const diff = startUtc - now;
-            if (diff < minUpcomingDiff) {
-              minUpcomingDiff = diff;
-              nextClass = { ...item, startUtc, endUtc };
-            }
+            upcomingClasses.push({ ...item, startUtc, endUtc });
           }
         });
       });
 
-      const heroBadge = document.getElementById("heroBadge");
-      const heroCountdown = document.getElementById("heroCountdown");
-      const heroTimerLbl = document.getElementById("heroTimerLbl");
+      // Sort upcoming classes by start time
+      upcomingClasses.sort((a, b) => a.startUtc - b.startUtc);
 
-      if (liveClass) {
-        heroBadge.textContent = "CLASS IN PROGRESS NOW";
-        heroBadge.classList.add("active-live");
-        heroCountdown.classList.add("active-live-val");
-        
-        document.getElementById("heroClassName").textContent = `${liveClass.title} (${liveClass.teacher})`;
-        
-        const localTimeStr = liveClass.startUtc.toLocaleTimeString("en-US", {
+      // Select top active classes and next 2 upcoming classes
+      const displayClasses = [
+        ...liveClasses.map(c => ({ ...c, isLive: true })),
+        ...upcomingClasses.slice(0, 2).map(c => ({ ...c, isLive: false }))
+      ];
+
+      if (displayClasses.length === 0) {
+        container.innerHTML = `
+          <div class="hero-card" style="flex:1;">
+            <div class="hero-label">TIMETABLE CONCLUDED</div>
+            <div class="hero-title">All Classes Completed</div>
+            <div class="hero-meta">November 2026 Schedule Concluded</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = displayClasses.map(item => {
+        const localTimeStr = item.startUtc.toLocaleTimeString("en-US", {
           timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
         });
-        document.getElementById("heroClassMeta").textContent = `Started at ${localTimeStr} (${tz}) • Ends in 1h`;
-        document.getElementById("heroLocalTime").textContent = localTimeStr;
-
-        const remainingMs = liveClass.endUtc - now;
-        heroCountdown.textContent = formatTimeDiff(remainingMs);
-        heroTimerLbl.textContent = "ENDS IN";
-
-      } else if (nextClass) {
-        heroBadge.textContent = "NEXT UPCOMING CLASS";
-        heroBadge.classList.remove("active-live");
-        heroCountdown.classList.remove("active-live-val");
-
-        document.getElementById("heroClassName").textContent = `${nextClass.title} (${nextClass.teacher})`;
-        
-        const localTimeStr = nextClass.startUtc.toLocaleTimeString("en-US", {
-          timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
-        });
-        const localDateStr = nextClass.startUtc.toLocaleDateString("en-US", {
+        const localDateStr = item.startUtc.toLocaleDateString("en-US", {
           timeZone: tz, weekday: 'short', month: 'short', day: '2-digit'
         });
 
-        document.getElementById("heroClassMeta").textContent = `${localDateStr} at ${localTimeStr} (${tz})`;
-        document.getElementById("heroLocalTime").textContent = localTimeStr;
-
-        const diffMs = nextClass.startUtc - now;
-        heroCountdown.textContent = formatTimeDiff(diffMs);
-        heroTimerLbl.textContent = "STARTS IN";
-
-      } else {
-        heroBadge.textContent = "TIMETABLE CONCLUDED";
-        heroBadge.classList.remove("active-live");
-        heroCountdown.classList.remove("active-live-val");
-        document.getElementById("heroClassName").textContent = "All Classes Completed";
-        document.getElementById("heroClassMeta").textContent = "November 2026 Schedule Concluded";
-        heroCountdown.textContent = "00:00:00";
-        document.getElementById("heroLocalTime").textContent = "--:--";
-      }
+        if (item.isLive) {
+          const remainingMs = item.endUtc - now;
+          return `
+            <div class="hero-card ongoing">
+              <div>
+                <div class="hero-label active-live">🔴 LIVE NOW</div>
+                <div class="hero-title">${item.title} (${item.teacher})</div>
+                <div class="hero-meta">Started at ${localTimeStr} (${tz})</div>
+              </div>
+              <div class="hero-timer-box">
+                <div class="timer-col">
+                  <div class="timer-val active-live-val">${formatTimeDiff(remainingMs)}</div>
+                  <div class="timer-lbl">ENDS IN</div>
+                </div>
+                <div class="timer-col">
+                  <div class="timer-val">${localTimeStr}</div>
+                  <div class="timer-lbl">LOCAL TIME</div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          const diffMs = item.startUtc - now;
+          return `
+            <div class="hero-card">
+              <div>
+                <div class="hero-label">NEXT UPCOMING</div>
+                <div class="hero-title">${item.title} (${item.teacher})</div>
+                <div class="hero-meta">${localDateStr} at ${localTimeStr} (${tz})</div>
+              </div>
+              <div class="hero-timer-box">
+                <div class="timer-col">
+                  <div class="timer-val">${formatTimeDiff(diffMs)}</div>
+                  <div class="timer-lbl">STARTS IN</div>
+                </div>
+                <div class="timer-col">
+                  <div class="timer-val">${localTimeStr}</div>
+                  <div class="timer-lbl">LOCAL TIME</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }).join("");
     }
 
     function renderTimetable() {
@@ -834,7 +855,7 @@
     function changeTimezone(val) {
       currentTz = val;
       renderTimetable();
-      updateHero();
+      updateHeroWidgets();
     }
 
     function copyDiscord() {
@@ -844,9 +865,9 @@
 
     function initApp() {
       renderTimetable();
-      updateHero();
+      updateHeroWidgets();
       setInterval(() => {
-        updateHero();
+        updateHeroWidgets();
         renderTimetable();
       }, 1000);
     }
