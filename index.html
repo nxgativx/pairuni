@@ -1,267 +1,765 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pair University - Class Timetable (November 2026)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        pairGold: '#F5B041',
-                        pairDark: '#121212',
-                        pairCard: '#1E1E1E',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom scrollbar for clean aesthetic */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #121212;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-        .pulse-live {
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pair University • Class Timetable</title>
+  <style>
+    :root {
+      --bg-dark: #0f0f11;
+      --card-bg: #18181c;
+      --card-border: #26262e;
+      --primary-gold: #f59e0b;
+      --gold-hover: #d97706;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent-eeka: #f97316;
+      --accent-elly: #ec4899;
+      --accent-zach: #3b82f6;
+      --accent-bedsy: #10b981;
+      --accent-scottie: #a855f7;
+      --accent-alex: #06b6d4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Header Banner */
+    .header-card {
+      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      color: #000;
+      box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3);
+      position: relative;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .icon-badge {
+      width: 48px;
+      height: 48px;
+      background: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .header-titles h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: #000;
+      color: #f59e0b;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .header-sub {
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      opacity: 0.9;
+      margin-bottom: 1rem;
+    }
+
+    .tz-controls {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .tz-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    select {
+      background: #000;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .tz-badge {
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Hero Banner */
+    .hero-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-gold), var(--accent-eeka));
+    }
+
+    .hero-label {
+      display: inline-block;
+      background: var(--primary-gold);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-meta {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .hero-timer-box {
+      background: #101014;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .timer-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timer-val {
+      font-size: 1.6rem;
+      font-weight: 900;
+      font-family: monospace;
+      color: var(--primary-gold);
+    }
+
+    .timer-lbl {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter Controls */
+    .filter-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-gold);
+    }
+
+    .teacher-pills {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .pill {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .pill.active, .pill:hover {
+      background: var(--primary-gold);
+      color: #000;
+      border-color: var(--primary-gold);
+    }
+
+    /* Timetable Grid */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .day-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .day-header {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .day-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .class-count {
+      font-size: 0.65rem;
+      font-weight: 800;
+      background: var(--primary-gold);
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .class-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .class-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .class-item:last-child {
+      border-bottom: none;
+    }
+
+    .class-time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--text-muted);
+    }
+
+    .class-subject {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .class-teacher {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+      text-transform: uppercase;
+    }
+
+    .badge-eeka { background: rgba(249, 115, 22, 0.2); color: var(--accent-eeka); border: 1px solid var(--accent-eeka); }
+    .badge-elly { background: rgba(236, 72, 153, 0.2); color: var(--accent-elly); border: 1px solid var(--accent-elly); }
+    .badge-zach { background: rgba(59, 130, 246, 0.2); color: var(--accent-zach); border: 1px solid var(--accent-zach); }
+    .badge-bedsy { background: rgba(16, 185, 129, 0.2); color: var(--accent-bedsy); border: 1px solid var(--accent-bedsy); }
+    .badge-scottie { background: rgba(168, 85, 247, 0.2); color: var(--accent-scottie); border: 1px solid var(--accent-scottie); }
+    .badge-alex { background: rgba(6, 182, 212, 0.2); color: var(--accent-alex); border: 1px solid var(--accent-alex); }
+
+    .live-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--primary-gold);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .widget-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .static-badge {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .discord-btn {
+      background: #5865F2;
+      color: #fff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="bg-neutral-950 text-neutral-100 min-h-screen font-sans antialiased pb-16">
+<body>
 
-    <!-- Toast Notification for Clipboard -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-yellow-500 text-black font-bold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 pointer-events-none">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span>Discord handle copied to clipboard!</span>
+  <div class="container">
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-top">
+        <div class="icon-badge">🎓</div>
+        <div class="header-titles">
+          <h1>Pair University</h1>
+          <div class="brand-badge">POWERED BY NEGATIVE.WTF</div>
+        </div>
+      </div>
+      <div class="header-sub">CLASS TIMETABLE • NOVEMBER 2026</div>
+
+      <div class="tz-controls">
+        <div class="tz-selector">
+          <span>🌎 Timezone:</span>
+          <select id="tzSelect" onchange="changeTimezone(this.value)">
+            <option value="AUTO">Browser Local (Auto)</option>
+            <option value="UTC">UTC / GMT</option>
+            <option value="America/New_York">EST / New York</option>
+            <option value="America/Los_Angeles">PST / Los Angeles</option>
+            <option value="Europe/London">BST / London</option>
+            <option value="Asia/Tokyo">JST / Tokyo</option>
+          </select>
+        </div>
+        <div class="tz-badge" id="activeTzBadge">Active TZ: UTC</div>
+      </div>
     </div>
 
-    <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
-
-        <!-- Top Header Banner -->
-        <header class="bg-gradient-to-r from-amber-500 via-pairGold to-yellow-500 text-black rounded-2xl p-5 sm:p-7 shadow-2xl border border-yellow-400/30">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <!-- Pair University Crest / Logo -->
-                    <div class="w-14 h-14 sm:w-16 sm:h-16 bg-black text-yellow-400 rounded-full flex items-center justify-center font-black text-2xl border-4 border-yellow-300 shadow-inner shrink-0">
-                        🎓
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <h1 class="text-2xl sm:text-4xl font-black tracking-wider uppercase leading-none">PAIR UNIVERSITY</h1>
-                            <span class="bg-black text-yellow-400 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md border border-yellow-500/50 shadow-sm">
-                                powered by negative.wtf
-                            </span>
-                        </div>
-                        <p class="text-xs sm:text-sm font-bold tracking-widest text-neutral-900 uppercase mt-1 opacity-90">
-                            CLASS TIMETABLE • NOVEMBER 2026
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Global Info & Timezone Selector -->
-                <div class="flex flex-wrap items-center gap-2 bg-black/20 p-2.5 rounded-xl backdrop-blur-md border border-black/10">
-                    <div class="text-xs font-semibold text-neutral-900 flex items-center gap-1.5 px-2">
-                        <span>🌍 Timezone:</span>
-                    </div>
-                    <select id="timezone-select" onchange="handleTimezoneChange(this.value)" class="bg-black text-yellow-400 font-bold text-xs rounded-lg px-3 py-2 border border-yellow-500/40 focus:outline-none focus:ring-2 focus:ring-black cursor-pointer">
-                        <option value="auto">🌐 Browser Local (Auto)</option>
-                        <option value="UTC">GMT • UK / EUROPE (UTC+0)</option>
-                        <option value="America/New_York">EST • New York (UTC-5)</option>
-                        <option value="America/Los_Angeles">PST • Los Angeles (UTC-8)</option>
-                        <option value="Europe/Paris">CET • Paris / Berlin (UTC+1)</option>
-                        <option value="Asia/Tokyo">JST • Tokyo (UTC+9)</option>
-                        <option value="Australia/Sydney">AEDT • Sydney (UTC+11)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="mt-4 pt-3 border-t border-black/10 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-neutral-900">
-                <div>📅 SCHEDULE: 10–20 NOV 2026</div>
-                <div>📝 EXAMS: 21–22 NOV 2026</div>
-                <div id="active-tz-display" class="bg-black/10 px-2 py-0.5 rounded text-[11px] font-extrabold">Active TZ: Detecting...</div>
-            </div>
-        </header>
-
-        <!-- Dynamic Hero Banner: Next Class Countdown -->
-        <section id="next-hero" class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-xl relative overflow-hidden transition-all duration-300">
-            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                        <span id="hero-status-badge" class="px-2.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-yellow-500 text-black">
-                            NEXT UPCOMING CLASS
-                        </span>
-                        <span id="hero-day-tag" class="text-xs text-neutral-400 font-medium"></span>
-                    </div>
-                    <h2 id="hero-title" class="text-xl sm:text-2xl font-black text-white">Loading schedule data...</h2>
-                    <p id="hero-details" class="text-xs sm:text-sm text-neutral-400">Please wait while countdown timers synchronize.</p>
-                </div>
-
-                <!-- Clock / Countdown -->
-                <div class="bg-neutral-950 border border-neutral-800 rounded-xl px-5 py-3 flex items-center gap-4 shrink-0 justify-between sm:justify-start">
-                    <div class="text-center">
-                        <div class="text-[10px] uppercase font-bold text-neutral-500">Starts In</div>
-                        <div id="hero-timer" class="font-mono text-2xl sm:text-3xl font-black text-yellow-400 tracking-tight">--:--:--</div>
-                    </div>
-                    <div class="h-8 w-px bg-neutral-800"></div>
-                    <div class="text-right">
-                        <div class="text-[10px] uppercase font-bold text-neutral-500">Local Time</div>
-                        <div id="hero-start-time" class="font-mono text-sm sm:text-base font-bold text-neutral-200">--:--</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Filters & Search Controls -->
-        <section class="bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-lg space-y-3">
-            <div class="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
-                <!-- Search input -->
-                <div class="relative flex-1">
-                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search subject or teacher (e.g. English, Alex + Pedro, Eeka)..." class="w-full pl-9 pr-4 py-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-500/50 transition-colors">
-                </div>
-
-                <!-- Quick Filter Pills -->
-                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none" id="teacher-filters">
-                    <button onclick="filterTeacher('ALL')" class="teacher-btn active bg-yellow-500 text-black px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALL</button>
-                    <button onclick="filterTeacher('EEKA')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-orange-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">EEKA</button>
-                    <button onclick="filterTeacher('ELLY')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-pink-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ELLY</button>
-                    <button onclick="filterTeacher('ZACH')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-yellow-300 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ZACH</button>
-                    <button onclick="filterTeacher('BEDSY')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-emerald-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">BEDSY</button>
-                    <button onclick="filterTeacher('SCOTTIE')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-purple-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">SCOTTIE</button>
-                    <button onclick="filterTeacher('ALEX')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-cyan-400 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALEX</button>
-                    <button onclick="filterTeacher('ALEX + PEDRO')" class="teacher-btn bg-neutral-950 hover:bg-neutral-800 text-cyan-300 border border-neutral-800 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0">ALEX + PEDRO</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Timetable Grid Container -->
-        <main id="timetable-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Dynamically populated day cards -->
-        </main>
-
-        <!-- Teachers & Subject Legend Card -->
-        <section class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <h3 class="text-xs font-extrabold uppercase tracking-widest text-neutral-400 border-b border-neutral-800 pb-2">TEACHERS &amp; SUBJECTS DIRECTORY</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#e67e22] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">EEKA</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">English • E-dating 1001</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#ec7063] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ELLY</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Mathematics • Femboy Aesthetics</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#52be80] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">BEDSY</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Gym / Sports • Com Kid Studies</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#af7ac5] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">SCOTTIE</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">History • Partying</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#d4ac0d] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ZACH</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">HAD • HTLBGATG</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-neutral-950 rounded-xl border border-neutral-800/80 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#5dade2] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">ALEX &amp; ALEX + PEDRO</span>
-                        <p class="text-xs text-neutral-300 mt-1 font-semibold">Ragebait (Alex) • Coding (Alex + Pedro)</p>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-2 text-[11px] text-neutral-500 border-t border-neutral-800/50 flex flex-col sm:flex-row gap-2 justify-between">
-                <span>* Only Eeka's Nov 15 catch-up sessions are optional; all other classes are compulsory.</span>
-                <span>HAD: Home Architecture Design | HTLBGATG: How to LARP Being Good at the Game</span>
-            </div>
-        </section>
-
-        <!-- Footer with Negative.wtf & Discord Credits -->
-        <footer class="mt-12 text-center text-xs text-neutral-400 space-y-3 pb-8">
-            <div class="flex flex-wrap items-center justify-center gap-3">
-                <span class="text-neutral-500">Powered by</span>
-                <span class="font-extrabold text-yellow-400 bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-800 flex items-center gap-1.5 shadow-sm">
-                    <span>⚡</span> negative.wtf
-                </span>
-                <span class="text-neutral-600">•</span>
-                <button onclick="copyDiscordHandle()" class="bg-neutral-900 hover:bg-neutral-800 text-neutral-300 px-3 py-1.5 rounded-lg border border-neutral-800 transition-all flex items-center gap-2 font-mono text-[11px] group cursor-pointer shadow-sm active:scale-95" title="Click to copy Discord handle">
-                    <span class="text-purple-400">💬</span> Discord: <span class="text-yellow-400 font-bold group-hover:underline">nxgativx</span>
-                    <span id="copy-badge" class="text-[9px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded ml-1 group-hover:bg-neutral-700">Copy</span>
-                </button>
-            </div>
-            <p class="text-neutral-600 text-[11px]">© 2026 Pair University Timetable • All dates and times adapt dynamically to your local timezone</p>
-        </footer>
-
+    <!-- Hero "Next Up" Banner -->
+    <div class="hero-card">
+      <div class="hero-label">NEXT UPCOMING CLASS</div>
+      <div class="hero-title" id="heroClassName">Loading schedule data...</div>
+      <div class="hero-meta" id="heroClassMeta">Please wait while countdown timers synchronize.</div>
+      
+      <div class="hero-timer-box">
+        <div class="timer-col">
+          <div class="timer-val" id="heroCountdown">--:--:--</div>
+          <div class="timer-lbl">STARTS IN</div>
+        </div>
+        <div class="timer-col">
+          <div class="timer-val" id="heroLocalTime">--:--</div>
+          <div class="timer-lbl">LOCAL TIME</div>
+        </div>
+      </div>
     </div>
 
-    <!-- JavaScript Engine -->
-    <script>
-        // Master Timetable Dataset (Base UTC timestamps representing November 2026 schedule)
-        const RAW_SCHEDULE = [
-            // Mon 09 Nov
-            { baseDayStr: "MON 09 NOV", baseTimeStr: "23:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-09T23:00:00Z").getTime() },
+    <!-- Filter Controls -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search subject or teacher (e.g. English, Alex + Pedro)..." oninput="renderTimetable()">
+      <div class="teacher-pills">
+        <button class="pill active" onclick="filterTeacher('ALL', this)">ALL</button>
+        <button class="pill" onclick="filterTeacher('EEKA', this)">EEKA</button>
+        <button class="pill" onclick="filterTeacher('ELLY', this)">ELLY</button>
+        <button class="pill" onclick="filterTeacher('ZACH', this)">ZACH</button>
+        <button class="pill" onclick="filterTeacher('BEDSY', this)">BEDSY</button>
+        <button class="pill" onclick="filterTeacher('SCOTTIE', this)">SCOTTIE</button>
+        <button class="pill" onclick="filterTeacher('ALEX', this)">ALEX / ALEX + PEDRO</button>
+      </div>
+    </div>
 
-            // Tue 10 Nov
-            { baseDayStr: "TUE 10 NOV", baseTimeStr: "00:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-10T00:00:00Z").getTime() },
-            { baseDayStr: "TUE 10 NOV", baseTimeStr: "01:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-10T01:00:00Z").getTime() },
-            { baseDayStr: "TUE 10 NOV", baseTimeStr: "02:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-10T02:00:00Z").getTime() },
+    <!-- Schedule Grid -->
+    <div class="schedule-grid" id="scheduleGrid"></div>
 
-            // Wed 11 Nov
-            { baseDayStr: "WED 11 NOV", baseTimeStr: "08:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-11T08:00:00Z").getTime() },
-            { baseDayStr: "WED 11 NOV", baseTimeStr: "09:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-11T09:00:00Z").getTime() },
-            { baseDayStr: "WED 11 NOV", baseTimeStr: "18:00", teacher: "SCOTTIE", subject: "History", optional: false, timestamp: new Date("2026-11-11T18:00:00Z").getTime() },
-            { baseDayStr: "WED 11 NOV", baseTimeStr: "19:00", teacher: "BEDSY", subject: "Gym / Sports", optional: false, timestamp: new Date("2026-11-11T19:00:00Z").getTime() },
-            { baseDayStr: "WED 11 NOV", baseTimeStr: "23:00", teacher: "ALEX + PEDRO", subject: "Creative Programming", optional: false, timestamp: new Date("2026-11-11T23:00:00Z").getTime() },
+    <!-- Footer -->
+    <div class="footer">
+      <div class="widget-row">
+        <div class="static-badge">negative.wtf</div>
+        <button class="discord-btn" onclick="copyDiscord()">discord: nxgativx</button>
+      </div>
+    </div>
+  </div>
 
-            // Thu 12 Nov
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "00:00", teacher: "ALEX + PEDRO", subject: "Creative Programming", optional: false, timestamp: new Date("2026-11-12T00:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "01:00", teacher: "ALEX", subject: "How to Ragebait", optional: false, timestamp: new Date("2026-11-12T01:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "02:00", teacher: "BEDSY", subject: "Com Kid Studies", optional: false, timestamp: new Date("2026-11-12T02:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "03:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-12T03:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "04:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-12T04:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "10:00", teacher: "EEKA", subject: "English", optional: false, timestamp: new Date("2026-11-12T10:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "11:00", teacher: "EEKA", subject: "E-dating 1001", optional: false, timestamp: new Date("2026-11-12T11:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "22:00", teacher: "ZACH", subject: "HAD", optional: false, timestamp: new Date("2026-11-12T22:00:00Z").getTime() },
-            { baseDayStr: "THU 12 NOV", baseTimeStr: "23:30", teacher: "ZACH", subject: "HTLBGATG", optional: false, timestamp: new Date("2026-11-12T23:30:00Z").getTime() },
+  <script>
+    const rawSchedule = [
+      { day: "MON 09 NOV", items: [{ time: "23:00", teacher: "EEKA", title: "English" }] },
+      { day: "TUE 10 NOV", items: [
+        { time: "00:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "01:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "02:00", teacher: "ELLY", title: "Femboy Aesthetics" }
+      ]},
+      { day: "WED 11 NOV", items: [
+        { time: "08:00", teacher: "EEKA", title: "English" },
+        { time: "09:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "18:00", teacher: "SCOTTIE", title: "History" },
+        { time: "19:00", teacher: "BEDSY", title: "Gym / Sports" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "THU 12 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "02:00", teacher: "BEDSY", title: "Com Kid Studies" },
+        { time: "03:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "04:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "10:00", teacher: "EEKA", title: "English" },
+        { time: "11:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "22:00", teacher: "ZACH", title: "HAD" },
+        { time: "23:30", teacher: "ZACH", title: "HTLBGATG" }
+      ]},
+      { day: "FRI 13 NOV", items: [
+        { time: "01:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "02:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "06:00", teacher: "ZACH", title: "HAD" },
+        { time: "07:00", teacher: "ZACH", title: "HTLBGATG" },
+        { time: "10:00", teacher: "EEKA", title: "English" },
+        { time: "11:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "15:00", teacher: "SCOTTIE", title: "Partying" },
+        { time: "23:00", teacher: "BEDSY", title: "Com Kid Studies" }
+      ]},
+      { day: "SAT 14 NOV", items: [
+        { time: "01:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "02:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "04:00", teacher: "EEKA", title: "English" },
+        { time: "05:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "13:00", teacher: "SCOTTIE", title: "History" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "SUN 15 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "02:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "03:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "05:30", teacher: "ZACH", title: "HAD" },
+        { time: "06:45", teacher: "ZACH", title: "HTLBGATG" },
+        { time: "08:00", teacher: "EEKA", title: "English catch-up (OPTIONAL)" },
+        { time: "09:00", teacher: "EEKA", title: "E-dating catch-up (OPTIONAL)" },
+        { time: "13:00", teacher: "SCOTTIE", title: "Partying" },
+        { time: "14:00", teacher: "SCOTTIE", title: "History" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "MON 16 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "03:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "04:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "05:00", teacher: "EEKA", title: "English" },
+        { time: "06:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "19:00", teacher: "SCOTTIE", title: "Partying" },
+        { time: "23:00", teacher: "ZACH", title: "HAD" }
+      ]},
+      { day: "TUE 17 NOV", items: [
+        { time: "01:00", teacher: "ZACH", title: "HTLBGATG" },
+        { time: "20:00", teacher: "BEDSY", title: "Gym / Sports" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "WED 18 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "17:00", teacher: "BEDSY", title: "Gym / Sports" },
+        { time: "19:00", teacher: "SCOTTIE", title: "History" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "THU 19 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "02:00", teacher: "BEDSY", title: "Com Kid Studies" },
+        { time: "03:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "04:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "10:00", teacher: "EEKA", title: "English" },
+        { time: "11:00", teacher: "EEKA", title: "E-dating 1001" },
+        { time: "17:00", teacher: "BEDSY", title: "Gym / Sports" },
+        { time: "20:00", teacher: "BEDSY", title: "Com Kid Studies" },
+        { time: "23:00", teacher: "ALEX + PEDRO", title: "Creative Programming" }
+      ]},
+      { day: "FRI 20 NOV", items: [
+        { time: "00:00", teacher: "ALEX + PEDRO", title: "Creative Programming" },
+        { time: "01:00", teacher: "ALEX", title: "How to Ragebait" },
+        { time: "02:00", teacher: "ELLY", title: "Mathematics" },
+        { time: "03:00", teacher: "ELLY", title: "Femboy Aesthetics" },
+        { time: "04:00", teacher: "EEKA", title: "English" },
+        { time: "05:00", teacher: "EEKA", title: "E-dating 1001" }
+      ]}
+    ];
 
-            // Fri 13 Nov
-            { baseDayStr: "FRI 13 NOV", baseTimeStr: "01:00", teacher: "ELLY", subject: "Mathematics", optional: false, timestamp: new Date("2026-11-13T01:00:00Z").getTime() },
-            { baseDayStr: "FRI 13 NOV", baseTimeStr: "02:00", teacher: "ELLY", subject: "Femboy Aesthetics", optional: false, timestamp: new Date("2026-11-13T02:00:00Z").getTime() },
-            { baseDayStr: "FRI 13 NOV", baseTimeStr: "06:00", teacher: "ZACH", subject: "HAD", optional: false, timestamp: new Date("2026-11-13T06:00:00Z").getTime() },
-            { baseDayStr: "FRI 13 N
+    let currentTz = "AUTO";
+    let activeFilter = "ALL";
+
+    function parseUtcDate(dayStr, timeStr) {
+      const match = dayStr.match(/(\d{2})\s+NOV/);
+      const dayNum = match ? parseInt(match[1]) : 10;
+      const [hh, mm] = timeStr.split(":").map(Number);
+      return new Date(Date.UTC(2026, 10, dayNum, hh, mm, 0));
+    }
+
+    function getResolvedTz() {
+      if (currentTz === "AUTO") {
+        try {
+          return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        } catch(e) {
+          return "UTC";
+        }
+      }
+      return currentTz;
+    }
+
+    function getTeacherBadgeClass(teacher) {
+      if (teacher.includes("EEKA")) return "badge-eeka";
+      if (teacher.includes("ELLY")) return "badge-elly";
+      if (teacher.includes("ZACH")) return "badge-zach";
+      if (teacher.includes("BEDSY")) return "badge-bedsy";
+      if (teacher.includes("SCOTTIE")) return "badge-scottie";
+      return "badge-alex";
+    }
+
+    function updateHero() {
+      const now = new Date();
+      const tz = getResolvedTz();
+      let nextClass = null;
+      let minDiff = Infinity;
+
+      rawSchedule.forEach(group => {
+        group.items.forEach(item => {
+          const classUtc = parseUtcDate(group.day, item.time);
+          const diff = classUtc - now;
+          if (diff > 0 && diff < minDiff) {
+            minDiff = diff;
+            nextClass = { ...item, utcDate: classUtc };
+          }
+        });
+      });
+
+      if (!nextClass) {
+        document.getElementById("heroClassName").textContent = "All Classes Completed";
+        document.getElementById("heroClassMeta").textContent = "November 2026 Timetable Concluded";
+        document.getElementById("heroCountdown").textContent = "00:00:00";
+        document.getElementById("heroLocalTime").textContent = "--:--";
+        return;
+      }
+
+      // Display both the class title and the teacher name
+      document.getElementById("heroClassName").textContent = `${nextClass.title} (${nextClass.teacher})`;
+      
+      const localTimeStr = nextClass.utcDate.toLocaleTimeString("en-US", {
+        timeZone: tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      const localDateStr = nextClass.utcDate.toLocaleDateString("en-US", {
+        timeZone: tz,
+        weekday: 'short',
+        month: 'short',
+        day: '2-digit'
+      });
+
+      document.getElementById("heroClassMeta").textContent = `${localDateStr} at ${localTimeStr} (${tz})`;
+      document.getElementById("heroLocalTime").textContent = localTimeStr;
+
+      const totalSec = Math.floor(minDiff / 1000);
+      const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const secs = String(totalSec % 60).padStart(2, '0');
+
+      document.getElementById("heroCountdown").textContent = `${hours}:${mins}:${secs}`;
+    }
+
+    function renderTimetable() {
+      const tz = getResolvedTz();
+      document.getElementById("activeTzBadge").textContent = `Active TZ: ${tz}`;
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const grid = document.getElementById("scheduleGrid");
+      grid.innerHTML = "";
+      const now = new Date();
+
+      rawSchedule.forEach(group => {
+        const filteredItems = group.items.filter(item => {
+          const matchTeacher = activeFilter === "ALL" || item.teacher.includes(activeFilter);
+          const matchSearch = item.title.toLowerCase().includes(search) || item.teacher.toLowerCase().includes(search);
+          return matchTeacher && matchSearch;
+        });
+
+        if (filteredItems.length === 0) return;
+
+        const dayCard = document.createElement("div");
+        dayCard.className = "day-card";
+
+        const headerDate = parseUtcDate(group.day, "12:00");
+        const formattedHeaderDate = headerDate.toLocaleDateString("en-US", {
+          timeZone: tz,
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short'
+        }).toUpperCase();
+
+        let itemsHtml = "";
+        filteredItems.forEach(item => {
+          const classUtc = parseUtcDate(group.day, item.time);
+          const timeStr = classUtc.toLocaleTimeString("en-US", {
+            timeZone: tz,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+
+          const diffSec = Math.floor((classUtc - now) / 1000);
+          let liveText = "";
+          if (diffSec > 0 && diffSec <= 86400) {
+            const h = Math.floor(diffSec / 3600);
+            const m = Math.floor((diffSec % 3600) / 60);
+            const s = diffSec % 60;
+            liveText = `<span class="live-badge">in ${h}h ${m}m ${s}s</span>`;
+          }
+
+          itemsHtml += `
+            <div class="class-item">
+              <div class="class-time-row">
+                <span>${timeStr}</span>
+                ${liveText}
+              </div>
+              <div class="class-subject">${item.title}</div>
+              <span class="class-teacher ${getTeacherBadgeClass(item.teacher)}">${item.teacher}</span>
+            </div>
+          `;
+        });
+
+        dayCard.innerHTML = `
+          <div class="day-header">
+            <span class="day-title">${formattedHeaderDate}</span>
+            <span class="class-count">${filteredItems.length} CLASSES</span>
+          </div>
+          <div class="class-list">${itemsHtml}</div>
+        `;
+
+        grid.appendChild(dayCard);
+      });
+    }
+
+    function filterTeacher(teacher, el) {
+      activeFilter = teacher;
+      document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+      el.classList.add("active");
+      renderTimetable();
+    }
+
+    function changeTimezone(val) {
+      currentTz = val;
+      renderTimetable();
+      updateHero();
+    }
+
+    function copyDiscord() {
+      navigator.clipboard.writeText("nxgativx");
+      alert("Copied Discord handle: nxgativx");
+    }
+
+    function initApp() {
+      renderTimetable();
+      updateHero();
+      setInterval(() => {
+        updateHero();
+        renderTimetable();
+      }, 1000);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
